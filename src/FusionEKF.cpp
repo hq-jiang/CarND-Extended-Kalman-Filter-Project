@@ -62,10 +62,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     */
     // first measurement
     cout << "EKF: " << endl;
+
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
     ekf_.P_ = MatrixXd::Identity(4,4);
-
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
@@ -87,6 +87,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     // done initializing, no need to predict or update
     is_initialized_ = true;
+    //cout << "First Measurement initialization" << endl;
     return;
   }
 
@@ -110,24 +111,25 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
              0, 1, 0, dt,
              0, 0, 1, 0,
              0, 0, 0, 1;
-
+  //cout << "F: " << endl << ekf_.F_ << endl;
   // Update process noise covariance
   MatrixXd G(4, 2);
   G << dt*dt/2, 0,
        0, dt*dt/2,
        dt, 0,
        0, dt;
-
+  //cout << "G: " << endl << G << endl;
   float ax = 9;
   float ay = 9;
   MatrixXd sigma(2, 2);
 
   sigma << ax, 0,
            0, ay;
+  //cout << "sigma: " << endl << sigma << endl;
   ekf_.Q_ = G*sigma*G.transpose();
-
+  //cout << "Q: " << endl << ekf_.Q_ << endl;
   ekf_.Predict();
-
+  //cout << "Finished prediction step" << endl;
   /*****************************************************************************
    *  Update
    ****************************************************************************/
@@ -139,9 +141,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    */
 
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
+    ekf_.R_ = R_radar_;
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
+    //cout << "Finished radar update step" << endl;
   } else {
+    ekf_.H_ = H_laser_;
+    ekf_.R_ = R_laser_;
+
     ekf_.Update(measurement_pack.raw_measurements_);
+    //cout << "Finished laser update step" << endl;
   }
 
   // print the output
