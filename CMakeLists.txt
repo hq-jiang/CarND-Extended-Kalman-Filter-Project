@@ -8,6 +8,8 @@ set(sources
     src/FusionEKF.cpp
     src/kalman_filter.cpp
     src/main.cpp
-    src/tools.cpp)
+    src/tools.cpp
+    src/measurement_package.h
+    src/ground_truth_package.h)
 
 add_executable(ExtendedKF ${sources})
