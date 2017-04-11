@@ -65,7 +65,11 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
     ekf_.x_ = VectorXd(4);
     ekf_.x_ << 1, 1, 1, 1;
-    ekf_.P_ = MatrixXd::Identity(4,4);
+    ekf_.P_ = MatrixXd(4, 4);
+    ekf_.P_ << 1, 0, 0, 0,
+               0, 1, 0, 0,
+               0, 0, 1000, 0,
+               0, 0, 0, 1000;
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
       /**
       Convert radar from polar to cartesian coordinates and initialize state.
@@ -75,7 +79,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       phi = measurement_pack.raw_measurements_[1];
       rho_pr = measurement_pack.raw_measurements_[2];
 
-      ekf_.x_ << rho*cos(phi), rho*sin(phi), rho_pr*cos(phi), rho_pr*sin(phi);
+      ekf_.x_ << rho*cos(phi), rho*sin(phi), 0, 0 ;//rho_pr*cos(phi), rho_pr*sin(phi);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       //x and P

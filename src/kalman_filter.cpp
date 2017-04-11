@@ -21,7 +21,7 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 
 void KalmanFilter::Predict() {
   x_ = F_*x_;
-  P_ = F_*P_*F_ + Q_.transpose();
+  P_ = F_*P_*F_.transpose() + Q_;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
@@ -43,10 +43,14 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   VectorXd y(3);
   VectorXd h(3);
   MatrixXd Hj = tool.CalculateJacobian(x_);
-  //std::cout << "Hj: " << std::endl << Hj << std::endl;
+  std::cout << "Hj: " << std::endl << Hj << std::endl;
   double c1 = std::sqrt(x_(0)*x_(0) +x_(1)*x_(1));
+  if(fabs(c1) < 0.0001){
+    c1 = 0.0001;
+  }
   h << c1, std::atan2(x_(1),x_(0)), (x_(0)*x_(2)+x_(1)*x_(3))/c1;
   y = z-h;
+  std::cout << "h:" << std::endl << h << std::endl;
   MatrixXd S = Hj*P_*Hj.transpose() + R_;
   MatrixXd K = P_*Hj.transpose()*S.inverse();
   x_ += K*y;
